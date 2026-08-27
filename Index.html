@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StudyBuddy AI</title>
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--text:#182033;--muted:#687086;--accent:#6c5ce7;--accent2:#8e7dff;--border:#e8e9f0;--good:#22a06b}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--text)}
+.app{max-width:1100px;margin:auto;min-height:100vh;padding:22px}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
+.logo{font-size:24px;font-weight:800}.logo span{color:var(--accent)}
+.streak{background:#fff;border:1px solid var(--border);padding:9px 14px;border-radius:20px;font-weight:700}
+nav{display:flex;gap:8px;overflow:auto;margin-bottom:20px}
+nav button{border:0;background:transparent;padding:11px 15px;border-radius:12px;font-weight:700;color:var(--muted);cursor:pointer;white-space:nowrap}
+nav button.active{background:var(--accent);color:#fff}
+.grid{display:grid;grid-template-columns:1.4fr .8fr;gap:18px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:20px;box-shadow:0 5px 20px rgba(30,35,60,.04)}
+.hero{background:linear-gradient(135deg,#6556df,#8d7cff);color:white;border:0}
+.hero h1{margin:0 0 8px;font-size:30px}.hero p{margin:0 0 18px;opacity:.9}
+button.primary{background:#fff;color:#5d4bd6;border:0;padding:11px 16px;border-radius:12px;font-weight:800;cursor:pointer}
+h2{margin:0 0 14px;font-size:20px}h3{margin:0 0 8px}
+textarea,input{width:100%;border:1px solid var(--border);border-radius:13px;padding:13px;font:inherit;outline:none;background:#fafbfe}
+textarea:focus,input:focus{border-color:var(--accent)}
+.row{display:flex;gap:10px}.row>*{flex:1}
+.chat{height:360px;overflow:auto;background:#fafbfe;border-radius:15px;padding:14px;margin-bottom:12px}
+.msg{max-width:85%;padding:11px 13px;border-radius:15px;margin:8px 0;line-height:1.45}
+.ai{background:#eeeafd}.user{background:var(--accent);color:#fff;margin-left:auto}
+.send{border:0;background:var(--accent);color:#fff;border-radius:13px;padding:0 18px;font-weight:800;cursor:pointer}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.stat{background:#fafbfe;border-radius:15px;padding:14px}.stat b{font-size:25px;display:block}
+.task{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--border)}.task:last-child{border:0}
+.task input{width:auto}.done{text-decoration:line-through;color:#9aa0af}
+.timer{text-align:center}.time{font-size:62px;font-weight:800;margin:12px 0}.timer button{margin:4px}
+.pill{display:inline-block;background:#eeeafd;color:#5d4bd6;padding:5px 9px;border-radius:20px;font-size:12px;font-weight:800}
+.flashcard{min-height:230px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:24px;font-weight:700;cursor:pointer;background:linear-gradient(135deg,#fff,#f1efff)}
+.quiz-option{width:100%;padding:12px;margin:7px 0;border:1px solid var(--border);background:#fff;border-radius:12px;text-align:left;cursor:pointer}
+.quiz-option:hover{border-color:var(--accent)}
+.hidden{display:none}.section{display:none}.section.active{display:block}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:25px}
+@media(max-width:800px){.grid{grid-template-columns:1fr}.app{padding:14px}.hero h1{font-size:25px}.stats{grid-template-columns:1fr 1fr}.time{font-size:50px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header><div class="logo">Study<span>Buddy</span> AI</div><div class="streak">🔥 <span id="streak">3</span> day streak</div></header>
+<nav>
+<button class="active" onclick="show('home',this)">🏠 Home</button>
+<button onclick="show('chat',this)">🤖 AI Tutor</button>
+<button onclick="show('flash',this)">🃏 Flashcards</button>
+<button onclick="show('quiz',this)">🧠 Quiz</button>
+<button onclick="show('focus',this)">⏱ Focus</button>
+</nav>
+
+<section id="home" class="section active">
+<div class="grid">
+<div>
+<div class="card hero"><h1>Your personal study buddy.</h1><p>Ask questions, review concepts, test yourself, and stay focused.</p><button class="primary" onclick="show('chat',document.querySelectorAll('nav button')[1])">Start studying →</button></div>
+<br>
+<div class="card"><h2>Today's progress</h2><div class="stats">
+<div class="stat"><b id="mins">25</b><small>focus minutes</small></div>
+<div class="stat"><b id="qs">8</b><small>questions</small></div>
+<div class="stat"><b>72%</b><small>quiz accuracy</small></div>
+</div></div>
+</div>
+<div class="card"><h2>Study plan</h2>
+<div class="task"><input type="checkbox" onchange="toggleTask(this)"><span>Review yesterday's notes</span></div>
+<div class="task"><input type="checkbox" onchange="toggleTask(this)"><span>Learn one new concept</span></div>
+<div class="task"><input type="checkbox" onchange="toggleTask(this)"><span>Take a practice quiz</span></div>
+<div class="task"><input type="checkbox" onchange="toggleTask(this)"><span>10-minute recap</span></div>
+</div>
+</div>
+</section>
+
+<section id="chat" class="section">
+<div class="card"><h2>🤖 AI Tutor <span class="pill">Socratic mode</span></h2>
+<div class="chat" id="chatbox"><div class="msg ai">Hi! I'm your study buddy. Tell me what you're learning, and I'll explain it simply, ask guiding questions, or help you make a study plan.</div></div>
+<div class="row"><input id="chatinput" placeholder="Ask: Explain photosynthesis simply..." onkeydown="if(event.key==='Enter')send()"><button class="send" onclick="send()">Send</button></div>
+</div>
+</section>
+
+<section id="flash" class="section">
+<div class="card"><h2>🃏 Flashcards</h2><p class="muted">Click the card to reveal the answer.</p>
+<div class="flashcard" id="fc" onclick="flipCard()">What is the powerhouse of the cell?</div>
+<div class="row" style="margin-top:14px"><button class="primary" onclick="prevCard()">← Previous</button><button class="primary" onclick="nextCard()">Next →</button></div>
+</div>
+</section>
+
+<section id="quiz" class="section">
+<div class="card"><h2>🧠 Quick Quiz</h2><p id="qtext">Which organelle is primarily responsible for producing ATP?</p>
+<div id="options"></div><p id="feedback"></p><button class="primary" onclick="newQuiz()">New question</button>
+</div>
+</section>
+
+<section id="focus" class="section">
+<div class="card timer"><h2>⏱ Focus Timer</h2><span class="pill">25-minute Pomodoro</span><div class="time" id="time">25:00</div>
+<button class="primary" onclick="startTimer()">Start</button><button class="primary" onclick="pauseTimer()">Pause</button><button class="primary" onclick="resetTimer()">Reset</button>
+<p id="timerStatus">Ready when you are.</p></div>
+</section>
+<footer>StudyBuddy AI — a simple prototype. Connect an AI API to make the tutor genuinely AI-powered.</footer>
+</div>
+
+<script>
+const sections=['home','chat','flash','quiz','focus'];
+function show(id,btn){document.querySelectorAll('.section').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));btn.classList.add('active')}
+function toggleTask(cb){cb.nextElementSibling.classList.toggle('done',cb.checked)}
+function send(){const i=document.getElementById('chatinput'),v=i.value.trim();if(!v)return;addMsg(v,'user');i.value='';setTimeout(()=>{let r="Let's break that down. First, explain what you already know about it in one or two sentences. Then I'll help you find the missing piece.";if(/photosynthesis/i.test(v))r="Photosynthesis is how plants turn light energy into chemical energy. Think of it as a tiny solar-powered factory: sunlight provides energy, carbon dioxide and water are the raw materials, and glucose is the stored product.";else if(/math|equation|algebra/i.test(v))r="Let's solve it step by step rather than jumping to the answer. What is the first operation you could undo on the equation?";else if(/plan|study/i.test(v))r="Try this 30-minute cycle: 5 min recall what you know, 15 min learn one concept, 7 min practice without notes, and 3 min explain it aloud.";addMsg(r,'ai')},450)}
+function addMsg(t,c){const b=document.getElementById('chatbox'),d=document.createElement('div');d.className='msg '+c;d.textContent=t;b.appendChild(d);b.scrollTop=b.scrollHeight}
+const cards=[['What is the powerhouse of the cell?','The mitochondrion.'],['What does DNA stand for?','Deoxyribonucleic acid.'],['What is 7 × 8?','56.'],['What is the main gas plants take in for photosynthesis?','Carbon dioxide.']];
+let ci=0,front=true;function flipCard(){front=!front;document.getElementById('fc').textContent=cards[ci][front?0:1]}function nextCard(){ci=(ci+1)%cards.length;front=true;document.getElementById('fc').textContent=cards[ci][0]}function prevCard(){ci=(ci-1+cards.length)%cards.length;front=true;document.getElementById('fc').textContent=cards[ci][0]}
+const quizzes=[['Which organelle is primarily responsible for producing ATP?',['Mitochondrion','Ribosome','Nucleus','Golgi apparatus'],0],['What gas is consumed during photosynthesis?',['Oxygen','Nitrogen','Carbon dioxide','Hydrogen'],2],['What is 12²?',['124','144','132','156'],1]];
+let qi=0;function newQuiz(){qi=Math.floor(Math.random()*quizzes.length);const q=quizzes[qi];document.getElementById('qtext').textContent=q[0];document.getElementById('feedback').textContent='';const o=document.getElementById('options');o.innerHTML='';q[1].forEach((x,i)=>{const b=document.createElement('button');b.className='quiz-option';b.textContent=x;b.onclick=()=>{document.getElementById('feedback').textContent=i===q[2]?'✅ Correct!':'❌ Not quite. Try another question.';if(i===q[2])document.getElementById('qs').textContent=+document.getElementById('qs').textContent+1};o.appendChild(b)})}newQuiz();
+let sec=1500,timer=null;function render(){document.getElementById('time').textContent=String(Math.floor(sec/60)).padStart(2,'0')+':'+String(sec%60).padStart(2,'0')}function startTimer(){if(timer)return;document.getElementById('timerStatus').textContent='Focus mode is on — you’ve got this!';timer=setInterval(()=>{if(sec>0){sec--;render();}else{clearInterval(timer);timer=null;document.getElementById('timerStatus').textContent='🎉 Session complete!';document.getElementById('mins').textContent=25}},1000)}function pauseTimer(){clearInterval(timer);timer=null;document.getElementById('timerStatus').textContent='Paused.'}function resetTimer(){pauseTimer();sec=1500;render();document.getElementById('timerStatus').textContent='Ready when you are.'}render();
+</script>
+</body>
+</html>
