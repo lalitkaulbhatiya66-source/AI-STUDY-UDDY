@@ -72,6 +72,45 @@ jobs:
       - name: Copy web files
         run: npx cap copy android
 
+      - name:   build-apk:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+
+      - name: Create package.json
+        run: npm init -y
+
+      - name: Install Capacitor
+        run: npm install @capacitor/core @capacitor/cli @capacitor/android
+
+      - name: Prepare web files
+        run: |
+          mkdir -p www
+          rsync -av --exclude=www --exclude=android --exclude=node_modules --exclude=.git ./ www/
+
+      - name: Create Capacitor config
+        run: |
+          cat > capacitor.config.json <<'EOF'
+          {
+            "appId": "com.aistudyuddy.app",
+            "appName": "AI Study Uddy",
+            "webDir": "www"
+          }
+          EOF
+
+      - name: Add Android
+        run: npx cap add android
+
+      - name: Copy web files
+        run: npx cap copy android
+
       - name: Build APK
         run: |
           cd android
