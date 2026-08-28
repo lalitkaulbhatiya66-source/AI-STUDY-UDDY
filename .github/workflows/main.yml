@@ -32,3 +32,54 @@ jobs:
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
+
+  build-apk:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Install Capacitor
+        run: npm install @capacitor/core @capacitor/cli @capacitor/android
+
+      - name: Create web folder
+        run: |
+          mkdir -p www
+          rsync -av --exclude=www --exclude=android --exclude=node_modules --exclude=.git ./ www/
+
+      - name: Create Capacitor config
+        run: |
+          cat > capacitor.config.json <<'EOF'
+          {
+            "appId": "com.aistudyuddy.app",
+            "appName": "AI Study Uddy",
+            "webDir": "www"
+          }
+          EOF
+
+      - name: Add Android
+        run: npx cap add android
+
+      - name: Copy web files
+        run: npx cap copy android
+
+      - name: Build APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: AI-Study-Uddy-APK
+          path: android/app/build/outputs/apk/debug/app-debug.apk
